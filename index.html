@@ -145,9 +145,14 @@ const $ = id => document.getElementById(id);
 const ITEMS = CONFIG.flatItems();          // 전체 문항 (영역 정보 포함)
 const TOTAL = ITEMS.length;
 
+/* 링크의 k 값은 주소에 안전한 글자만 쓰도록 +와 /를 -와 _로 바꿔 담습니다.
+   (주소에서 +는 빈칸으로 바뀌어 버려서, 어린이집 이름에 따라 링크가 깨지는 일이 있었습니다.
+    예전에 만든 링크도 계속 열리도록 빈칸도 +로 되돌립니다.) */
+function b64url(s){ return btoa(s).replace(/\+/g,"-").replace(/\//g,"_"); }
 function readLink(){
-  const p = new URLSearchParams(location.search).get("k");
+  let p = new URLSearchParams(location.search).get("k");
   if(!p) return null;
+  p = p.replace(/ /g,"+").replace(/-/g,"+").replace(/_/g,"/");
   try { return JSON.parse(decodeURIComponent(atob(p))); } catch(e){ return null; }
 }
 function todayStr(){
@@ -253,7 +258,7 @@ function genLink(){
     out.innerHTML = '<div class="err">😢 한메일(@hanmail.net) 주소로는 응답 메일이 도착하지 않아요.<br><b>지메일(gmail.com)</b>이나 네이버 주소로 바꿔서 넣어주세요.</div>'; return;
   }
   state.org = org; state.email = email; state.period = period; state.copies = copies;
-  const k = btoa(encodeURIComponent(JSON.stringify({o:org, e:email, p:period, c:copies})));
+  const k = b64url(encodeURIComponent(JSON.stringify({o:org, e:email, p:period, c:copies})));
   const base = location.origin + location.pathname;
   const linkUrl = base + "?k=" + k;
   const msg = `[${org} 부모만족도 조사]\n\n안녕하세요, 학부모님.\n더 나은 보육을 위해 부모만족도 조사를 실시합니다.\n무기명으로 진행되며 3분이면 끝납니다.\n\n👉 ${linkUrl}\n\n${period ? "참여 기간: " + period + "\n" : ""}소중한 의견 부탁드립니다. 감사합니다.`;
