@@ -53,6 +53,7 @@
   .q{border:1px solid var(--line);border-radius:14px;padding:15px 14px 13px;margin-bottom:12px;background:#fff}
   .q.unanswered{border-left:4px solid #e9c98a}
   .q.answered{border-left:4px solid var(--ok)}
+  .q .qnote{background:#f7f5f0;border-radius:9px;padding:9px 12px;font-size:12.5px;color:#7a7268;line-height:1.7;margin-bottom:11px}
   .q .qhead{display:flex;gap:9px;margin-bottom:12px}
   .q .qno{flex:none;width:25px;height:25px;border-radius:50%;background:var(--navy);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}
   .q .qtext{font-size:14.5px;font-weight:500;line-height:1.55}
@@ -114,6 +115,7 @@
   .sheet th{background:#1a3a5c;color:#fff;font-weight:700;text-align:center}
   .sheet td.c{text-align:center;white-space:nowrap}
   .sheet td.area{background:#f7f4ec;font-weight:700;color:#5b4a24;text-align:center;white-space:nowrap}
+  .sheet .qnote-s{color:#8b8378;font-size:10.5px;line-height:1.5;margin-bottom:3px}
   .sheet .ans{font-weight:700;color:#3f7d4f}
   .sheet .free{border:1px solid #dcd5c7;border-radius:6px;padding:9px 11px;font-size:12px;margin-bottom:8px;line-height:1.6;min-height:34px;white-space:pre-wrap}
   .sheet .freelab{font-size:11.5px;font-weight:700;color:#1a3a5c;margin:10px 0 4px}
@@ -345,7 +347,8 @@ function renderQuestions(){
     }
     const sel = state.answers[n];
     html += `<div class="q ${sel!==undefined?'answered':'unanswered'}" id="q-${n}">
-      <div class="qhead"><div class="qno">${n}</div><div class="qtext">${esc(it.text)}</div></div>
+      ${it.note ? `<div class="qnote">${esc(fill(it.note))}</div>` : ""}
+      <div class="qhead"><div class="qno">${n}</div><div class="qtext">${esc(fill(it.text))}</div></div>
       <div class="scale">`;
     CONFIG.scale.forEach(s=>{
       const short = esc(s.short).replace(/ /g,"<br>");
@@ -382,7 +385,7 @@ function renderExtra(){
   $("app").innerHTML = `
   <div class="card">
     <h2><span class="step-num">3</span> ${esc(E.title)}</h2>
-    <p class="lead">점수에 들어가지 않는 의견 조사입니다. 편하게 적어주세요.</p>
+    <p class="lead">${E.subtitle ? esc(E.subtitle) + "<br>" : ""}점수에 들어가지 않는 의견 조사입니다. 편하게 적어주세요.</p>
 
     <div class="field"><label>1. ${esc(E.frequency.question)}</label>
       <div class="chips" id="freqChips">
@@ -426,6 +429,7 @@ function renderDone(){
     <label class="consent"><input type="checkbox" id="agree" onchange="document.getElementById('subBtn').disabled=!this.checked">
       <span>무기명 응답 내용이 <b>${esc(state.org)}</b>의 보육 개선 자료로 활용되는 것에 동의합니다.</span></label>
     <button class="btn-main" id="subBtn" disabled onclick="submitAndSend()">📤 제출하기</button>
+    <div class="notice" style="margin-top:16px;text-align:left">${esc(fill(CONFIG.closing))}</div>
     <div id="sub-status" class="status"></div>
     <div class="row"><button class="nav btn-prev" onclick="go(2)">← 이전</button><span></span></div>
   </div>`;
@@ -518,7 +522,8 @@ function buildSheet(){
       const span = CONFIG.areas[it.areaIndex].items.length;
       areaCell = `<td class="area" rowspan="${span}">${esc(it.area)}</td>`;
     }
-    rows += `<tr>${areaCell}<td class="c">${n}</td><td>${esc(it.text)}</td>`
+    const noteHtml = it.note ? `<div class="qnote-s">${esc(fill(it.note))}</div>` : "";
+    rows += `<tr>${areaCell}<td class="c">${n}</td><td>${noteHtml}${esc(fill(it.text))}</td>`
          +  `<td class="c"><span class="ans">${v===undefined?'-':v}</span></td>`
          +  `<td class="c">${v===undefined?'-':esc(S[v])}</td></tr>`;
   });
